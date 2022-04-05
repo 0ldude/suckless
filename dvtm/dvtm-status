@@ -1,0 +1,19 @@
+#!/bin/sh
+FIFO="/tmp/dvtm-status.$$"
+
+[ -p "$FIFO" ] || mkfifo -m 600 "$FIFO" || exit 1
+
+while true; do
+	kernel=$(uname -sr)
+	date=$(date +%F_%T)
+	ip=$(ip route | tail -n 1 | cut -d ' ' -f 1)
+	uptime=$(uptime -p)
+	echo $kernel $uptime $ip $date
+	sleep 0.5
+done > "$FIFO" &
+
+STATUS_PID=$!
+dvtm -s "$FIFO" "$@" 2> /dev/null
+kill $STATUS_PID
+wait $STATUS_PID 2> /dev/null
+rm -f "$FIFO"
