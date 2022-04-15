@@ -8,7 +8,7 @@ static int min_width = 500;                    /* minimum width when centered */
 static const char *fonts[] = {
 	"monospace:size=10"
 };
-static const char *prompt      = NULL;      /* -p  option; prompt to the left of input field */
+static const char *prompt      = "Search:";      /* -p  option; prompt to the left of input field */
 static const char *colors[SchemeLast][2] = {
 	/*     fg         bg       */
 	[SchemeNorm] = { "#bbbbbb", "#222222" },

@@ -1,2 +1,2 @@
 #!/bin/sh
-dmenu_path | dmenu "$@" | ${SHELL:-"/bin/sh"} &
+dmenu_path | dmenu -hp pcmanfm,st,surf,chromium-ug "$@" | ${SHELL:-"/bin/sh"} & 
