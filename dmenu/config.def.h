@@ -6,16 +6,16 @@ static int centered = 1;                    /* -c option; centers dmenu on scree
 static int min_width = 500;                    /* minimum width when centered */
 /* -fn option overrides fonts[0]; default X11 font or font set */
 static const char *fonts[] = {
-	"monospace:size=10",
-        "FiraCode Nerd Font:size=12",
+	"TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
+	"Symbols Nerd Font:style=1000-em:size=14:antialias=true:autohint=true",
 };
 static const char *prompt      = "Search:";      /* -p  option; prompt to the left of input field */
 static const char *colors[SchemeLast][10] = {
 	/*     fg         bg       */
-	[SchemeNorm] = { "#bbbbbb", "#222222" },
-	[SchemeSel] = { "#eeeeee", "#005577" },
-	[SchemeOut] = { "#000000", "#00ffff" },
-	[SchemeHp]  = { "#bbbbbb", "#333333" },
+	[SchemeNorm] = { "#ebdbb2", "#282828" },
+	[SchemeSel] = { "#ebdbb2", "#458588" },
+	[SchemeOut] = { "#ebdbb2", "#1d2021" },
+	[SchemeHp]  = { "#ebdbb2", "#458588" },
         [SchemeHighlight] = {"#f1fa8c", "#596377", "#3E485B"},
         [SchemeHover] = {"#ffffff", "#353D4B", "#3E485B"},
         [SchemeGreen] = {"#ffffff", "#52E067", "#41b252"},
