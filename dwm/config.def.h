@@ -1,7 +1,7 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int borderpx  = 1;         /* border pixel of windows */
+static const unsigned int borderpx  = 5;         /* border pixel of windows */
 static const int gappx              = 10;        /* gaps between windows */
 static const unsigned int snap      = 32;        /* snap pixel */
 static const unsigned int systraypinning = 0;    /* 0: sloppy systray follows selected monitor,
@@ -24,35 +24,38 @@ static const int user_bh            = 0;         /* 0 means that dwm will calcul
 enum showtab_modes { showtab_never, showtab_auto, showtab_nmodes, showtab_always};
 static const int showtab            = showtab_auto;        /* Default tab barshow mode */
 static const int toptab             = False;               /* False means bottom tab bar */
-static const char *fonts[]          = { "monospace:size=10" };
-static const char dmenufont[]       = "monospace:size=10";
-static const char col_gray1[]       = "#222222";
-static const char col_gray2[]       = "#444444";
-static const char col_gray3[]       = "#bbbbbb";
-static const char col_gray4[]       = "#eeeeee";
-static const char col_cyan[]        = "#005577";
+static const char *fonts[]          = {
+        "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
+        "Symbols Nerd Font:style=1000-em:size=14:antialias=true:autohint=true",
+ };
+static const char dmenufont[]       = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
+static const char col_gray1[]       = "#282828";
+static const char col_gray2[]       = "#a89984";
+static const char col_gray3[]       = "#ebdbb2";
+static const char col_cyan[]        = "#458588";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
-	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
+	[SchemeSel]  = { col_gray3, col_cyan,  col_cyan  },
 };
 
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 static const char *tagsel[][2] = {
-	{ "#ffffff", "#ff0000" },
-	{ "#ffffff", "#ff7f00" },
-	{ "#000000", "#ffff00" },
-	{ "#000000", "#00ff00" },
-	{ "#ffffff", "#0000ff" },
-	{ "#ffffff", "#4b0082" },
-	{ "#ffffff", "#9400d3" },
-	{ "#000000", "#ffffff" },
-	{ "#ffffff", "#000000" },
+        /*   fg          bg   */
+	{ "#458588", "#282828" },
+	{ "#458588", "#282828" },
+	{ "#458588", "#282828" },
+	{ "#458588", "#282828" },
+	{ "#458588", "#282828" },
+	{ "#458588", "#282828" },
+	{ "#458588", "#282828" },
+	{ "#458588", "#282828" },
+	{ "#458588", "#282828" },
 };
 
-static const unsigned int ulinepad	= 5;	/* horizontal padding between the underline and tag */
+static const unsigned int ulinepad	= 2;	/* horizontal padding between the underline and tag */
 static const unsigned int ulinestroke	= 2;	/* thickness / height of the underline */
 static const unsigned int ulinevoffset	= 0;	/* how far above the bottom of the bar the line should appear */
 static const int ulineall 		= 0;	/* 1 to show underline on all tags, 0 for just the active ones */
@@ -80,9 +83,9 @@ static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen win
 static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "[]=",      tile },    /* first entry is default */
-	{ "><>",      NULL },    /* no layout function means floating behavior */
 	{ "[M]",      monocle },
 	{ "###",      horizgrid },
+	{ "><>",      NULL },    /* no layout function means floating behavior */
 };
 
 /* key definitions */
@@ -98,7 +101,7 @@ static const Layout layouts[] = {
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
+static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray3, NULL };
 static const char *termcmd[]  = { "st", NULL };
 static const char *layoutmenu_cmd = "layoutmenu.sh";
 
@@ -183,4 +186,4 @@ static Button buttons[] = {
 /* on a stock dwm install, this seems to be two; however, you'll have to
  * change it depending on how many invisible X windows exist */
 /* you can get a list with `xwininfo -tree -root`. */
-static const int EMPTY_WINDOW_COUNT = 2;
+static const int EMPTY_WINDOW_COUNT = 0;
