@@ -2,7 +2,6 @@
 
 cat <<EOF | xmenu
 []= Tiled Layout	0
-[M] Monocle Layout	1
-### HorizGrid Layout    2
-><> Floating Layout	3
+><> Floating Layout	1
+[M] Monocle Layout	2
 EOF
