@@ -1,11 +1,13 @@
 /* modifier 0 means no modifier */
-static int surfuseragent    = 1;  /* Append Surf version to default WebKit user agent */
+static int surfuseragent    = 0;  /* Append Surf version to default WebKit user agent */
 static char *fulluseragent  = ""; /* Or override the whole user agent string */
 static char *scriptfile     = "~/.surf/script.js";
 static char *styledir       = "~/.surf/styles/";
 static char *certdir        = "~/.surf/certificates/";
 static char *cachedir       = "~/.surf/cache/";
 static char *cookiefile     = "~/.surf/cookies.txt";
+static char *historyfile    = "~/.surf/history.txt";
+
 
 /* Webkit default features */
 /* Highest priority value will be used.
@@ -25,7 +27,7 @@ static Parameter defconfig[ParameterLast] = {
 	[DNSPrefetch]         =       { { .i = 0 },     },
 	[Ephemeral]           =       { { .i = 0 },     },
 	[FileURLsCrossAccess] =       { { .i = 0 },     },
-	[FontSize]            =       { { .i = 12 },    },
+	[FontSize]            =       { { .i = 14 },    },
 	[FrameFlattening]     =       { { .i = 0 },     },
 	[Geolocation]         =       { { .i = 0 },     },
 	[HideBackground]      =       { { .i = 0 },     },
@@ -46,7 +48,7 @@ static Parameter defconfig[ParameterLast] = {
 	[StrictTLS]           =       { { .i = 1 },     },
 	[Style]               =       { { .i = 1 },     },
 	[WebGL]               =       { { .i = 0 },     },
-	[ZoomLevel]           =       { { .f = 1.0 },   },
+	[ZoomLevel]           =       { { .f = 1.2 },   },
 };
 
 static UriParameters uriparams[] = {
