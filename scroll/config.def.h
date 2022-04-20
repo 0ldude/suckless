@@ -12,5 +12,5 @@ struct rule rules[] = {
 	{"\033[6;2~",   SCROLL_DOWN, -1},	/* [Shift] + [PageDown] */
 	/* mouse binding shadows ^E and ^Y, so it's disabled by default */
 	{"\031",        SCROLL_UP,    1},	/* mouse wheel up */
-	{"\033[1:6B",   SCROLL_DOWN,  1},	/* mouse wheel Down */
+	{"\033[1;6B",   SCROLL_DOWN,  1},	/* mouse wheel Down */
 };
