@@ -1,5 +1,6 @@
 /* modifier 0 means no modifier */
 static int surfuseragent    = 0;  /* Append Surf version to default WebKit user agent */
+static int extendedtitle    = 0;  /* 0 to not append surf's toggle and page status to title. */
 static char *fulluseragent  = ""; /* Or override the whole user agent string */
 static char *scriptfile     = "~/.surf/script.js";
 static char *styledir       = "~/.surf/styles/";
@@ -178,6 +179,7 @@ static Key keys[] = {
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_a,      togglecookiepolicy, { 0 } },
 	{ 0,                     GDK_KEY_F11,    togglefullscreen, { 0 } },
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_o,      toggleinspector, { 0 } },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_e,      toggletitle,        { 0 } },
 
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_c,      toggle,     { .i = CaretBrowsing } },
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_f,      toggle,     { .i = FrameFlattening } },
