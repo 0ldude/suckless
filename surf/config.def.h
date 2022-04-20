@@ -4,7 +4,7 @@ static int extendedtitle    = 0;  /* 0 to not append surf's toggle and page stat
 static char *fulluseragent  = ""; /* Or override the whole user agent string */
 static char *scriptfile     = "~/.surf/script.js";
 static char *styledir       = "~/.surf/styles/";
-static char *searchurl      = "lite.duckduckgo.com/?q=%s";
+static char *searchurl      = "https://lite.duckduckgo.com/lite/?q=\%\s";
 static char *certdir        = "~/.surf/certificates/";
 static char *cachedir       = "~/.surf/cache/";
 static char *cookiefile     = "~/.surf/cookies.txt";
@@ -73,9 +73,9 @@ static WebKitFindOptions findopts = WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE |
         .v = (const char *[]){ "/bin/sh", "-c", \
              "prop=\"$(printf '%b' \"$(xprop -id $1 "r" " \
              "| sed -e 's/^"r"(UTF8_STRING) = \"\\(.*\\)\"/\\1/' " \
-             "      -e 's/\\\\\\(.\\)/\\1/g')\" " \
-             "| dmenu -p '"p"' -w $1)\" " \
-             "&& xprop -id $1 -f "s" 8u -set "s" \"$prop\"", \
+             "      -e 's/\\\\\\(.\\)/\\1/g')\" " " && cat ~/.surf/bookmarks" \
+             "| dmenu -l 10 -p '"p"' -w $1)\" && " \
+             "xprop -id $1 -f "s" 8u -set "s" \"$prop\"", \
              "surf-setprop", winid, NULL \
         } \
 }
@@ -119,6 +119,17 @@ static WebKitFindOptions findopts = WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE |
 "prop=\"`dmenu.uri.sh`\" &&" \
 "xprop -id $1 -f $0 8s -set $0 \"$prop\"", \
 p, winid, NULL } }
+
+/* BM_ADD(readprop) */
+#define BM_ADD(r) {\
+        .v = (const char *[]){ "/bin/sh", "-c", \
+             "(echo $(xprop -id $0 $1) | cut -d '\"' -f2 " \
+             "| sed 's/.*https*:\\/\\/\\(www\\.\\)\\?//' && cat ~/.surf/bookmarks) " \
+             "| awk '!seen[$0]++' > ~/.surf/bookmarks.tmp && " \
+             "mv ~/.surf/bookmarks.tmp ~/.surf/bookmarks", \
+             winid, r, NULL \
+        } \
+}
 
 /* styles */
 /*
@@ -200,7 +211,9 @@ static Key keys[] = {
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_t,      toggle,     { .i = StrictTLS } },
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_m,      toggle,     { .i = Style } },
         /* surf-history patch */
-        { MODKEY,                GDK_Return,     spawn,      SETURI("_SURF_GO") },
+        { MODKEY,                GDK_KEY_Return, spawn,      SETURI("_SURF_GO") },
+        /* surf-simple-bookmarking patch */
+        { MODKEY,                GDK_KEY_m,      spawn,      BM_ADD("_SURF_URI") },
 };
 
 /* button definitions */
