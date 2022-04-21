@@ -1,5 +1,13 @@
 /* See LICENSE file for copyright and license details. */
 
+/* function keys */
+#include <X11/XF86keysym.h>
+const char *upvol[]          = { "/usr/bin/pulsemixer", "--change-volume", "+5", NULL };
+const char *downvol[]        = { "/usr/bin/pulsemixer", "--change-volume", "-5", NULL };
+const char *mutevol[]        = { "/usr/bin/pulsemixer", "--mute",                NULL };
+const char *brightdown[]     = { "/usr/bin/xbacklight", "-dec",            "10", NULL };
+const char *brightup[]       = { "/usr/bin/xbacklight", "-inc",            "10", NULL };
+
 /* appearance */
 static const unsigned int borderpx  = 3;         /* border pixel of windows */
 static const int gappx     = 10;                 /* gaps between windows */
@@ -26,7 +34,7 @@ static const char *fonts[]          = {
         "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
         "Symbols Nerd Font:style=1000-em:size=14:antialias=true:autohint=true",
 };
-static const char dmenufont[]       = "monospace:size=10";
+static const char dmenufont[]       = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
 static const char col_gray1[]       = "#282828";
 static const char col_gray2[]       = "#1d2021";
 static const char col_gray3[]       = "#ebdbb2";
@@ -70,6 +78,8 @@ static const Rule rules[] = {
 	//{ "Gimp",     NULL,       NULL,       0,         0,             1,           -1,        0 },
 	//{ "Firefox",  NULL,       NULL,       1 << 8,    0,             0,           -1,        0 },
         { NULL,       NULL,      "scratchpad", 0,          1,             1,           -1,      's' },
+        { NULL,       NULL,      "pulsemixer", 0,          1,             1,           -1,      'v' },
+        { NULL,       NULL,      "nmtui",      0,          1,             1,           -1,      'n' },
 
 };
 
@@ -107,6 +117,8 @@ static const char *layoutmenu_cmd = "layoutmenu.sh";
 
 /*First arg only serves to match against key in rules*/
 static const char *scratchpadcmd[] = {"s", "st", "-t", "scratchpad", NULL}; 
+static const char *pulsemixercmd[] = {"v", "st", "-t", "pulsemixer", "-e", "pulsemixer",  NULL}; 
+static const char *nmtuicmd[] = {"n", "st", "-t", "nmtui", "-e", "nmtui",  NULL}; 
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -154,6 +166,8 @@ static Key keys[] = {
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
 	{ MODKEY|ControlMask|ShiftMask, XK_q,      quit,           {0} },
+        { MODKEY,                       XK_n,      togglescratch, {.v = nmtuicmd } },
+        { MODKEY,                       XK_v,      togglescratch, {.v = pulsemixercmd } },
 };
 
 /* button definitions */
