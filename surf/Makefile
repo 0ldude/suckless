@@ -39,7 +39,7 @@ $(WOBJ): $(WSRC)
 clean:
 	rm -f surf $(OBJ)
 	rm -f $(WLIB) $(WOBJ)
-
+	rm -f config.h
 distclean: clean
 	rm -f config.h surf-$(VERSION).tar.gz
 
