@@ -2,11 +2,11 @@
 
 /* appearance */
 static const char font[]        = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
-static const char* normbgcolor  = "#282828";
+static const char* normbgcolor  = "#1d2021";
 static const char* normfgcolor  = "#ebdbb2";
 static const char* selbgcolor   = "#282828";
 static const char* selfgcolor   = "#458588";
-static const char* urgbgcolor   = "#282828";
+static const char* urgbgcolor   = "#1d2021";
 static const char* urgfgcolor   = "#cc241d";
 static const char before[]      = "<";
 static const char after[]       = ">";
