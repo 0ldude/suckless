@@ -12,13 +12,4 @@ static const char *colorname[NUMCOLS] = {
 static const int failonclear = 1;
 
 /* Background image path, should be available to the user above */
-static const char* background_image = "~/Pictures/1920x1080-dark-archlinux2.png";
-
-/*Enable blur*/
-#define BLUR
-/*Set blur radius*/
-static const int blurRadius=5;
-/*Enable Pixelation*/
-#define PIXELATION
-/*Set pixelation radius*/
-static const int pixelSize=4;
+static const char* background_image = "";
