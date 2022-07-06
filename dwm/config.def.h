@@ -9,9 +9,9 @@ const char *brightdown[]     = { "/usr/bin/xbacklight", "-dec",            "10",
 const char *brightup[]       = { "/usr/bin/xbacklight", "-inc",            "10", NULL };
 
 /* appearance */
-static const unsigned int borderpx  = 3;         /* border pixel of windows */
+static unsigned int borderpx  = 3;         /* border pixel of windows */
 static const int gappx     = 10;                 /* gaps between windows */
-static const unsigned int snap      = 32;        /* snap pixel */
+static unsigned int snap      = 32;        /* snap pixel */
 static const unsigned int systraypinning = 0;    /* 0: sloppy systray follows selected monitor,
                                                    >0: pin systray to monitor X */
 static const unsigned int systrayonleft = 0;     /* 0: systray in the right corner,
@@ -20,8 +20,8 @@ static const unsigned int systrayspacing = 2;    /* systray spacing */
 static const int systraypinningfailfirst = 1;    /* 1: if pinning fails, display systray on the first monitor,
                                                     0: display systray on the last monitor*/
 static const int showsystray        = 1;         /* 0 means no systray */
-static const int showbar            = 1;         /* 0 means no bar */
-static const int topbar             = 1;         /* 0 means bottom bar */
+static int showbar            = 1;         /* 0 means no bar */
+static int topbar             = 1;         /* 0 means bottom bar */
 static const int user_bh            = 20;         /* 0 means that dwm will calculate bar height,
                                                   >=1 means dwm will user_bh as bar height */
 /* Display modes of the tab bar: never shown, always shown, shown only in  
@@ -30,21 +30,23 @@ static const int user_bh            = 20;         /* 0 means that dwm will calcu
 enum showtab_modes { showtab_never, showtab_auto, showtab_nmodes, showtab_always};
 static const int showtab            = showtab_auto;        /* Default tab barshow mode */
 static const int toptab             = True;               /* False means bottom tab bar */
-static const char *fonts[]          = { 
-        "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
+static char font[]          = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
+static char *fonts[]          = { 
+	font,
         "Symbols Nerd Font:size=14:antialias=true:autohint=true",
 };
-static const char dmenufont[]       = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
-static const char col_gray1[]       = "#282828";
-static const char col_gray2[]       = "#1d2021";
-static const char col_gray3[]       = "#ebdbb2";
-static const char col_gray4[]       = "#ebdbb2";
-static const char col_cyan[]        = "#458588";
-static const char *colors[][3]      = {
+static char dmenufont[]       = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
+static char normbgcolor[]     = "#1d2021";
+static char normfgcolor[]     = "#ebdbb2";
+static char normbordercolor[] = "#1d2021";
+static char selfgcolor[]      = "#ebdbb2";
+static char selbgcolor[]      = "#282828";
+static char selbordercolor[]  = "#458588";
+static char *colors[][3]      = {
 	/*               fg         bg         border   */
-	[SchemeNorm] = { col_gray3, col_gray2, col_gray2 },
-	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
-	[SchemeTitle] = { col_cyan, col_gray1, col_cyan  },
+	[SchemeNorm] = { normfgcolor, normbgcolor, normbordercolor },
+	[SchemeSel]  = { selfgcolor, selbgcolor, selbordercolor },
+	[SchemeTitle] = { selbordercolor, selbgcolor, selbordercolor },
 };
 
 /* tagging */
@@ -86,9 +88,9 @@ static const Rule rules[] = {
 };
 
 /* layout(s) */
-static const float mfact     = 0.5; /* factor of master area size [0.05..0.95] */
-static const int nmaster     = 1;    /* number of clients in master area */
-static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
+static float mfact     = 0.5; /* factor of master area size [0.05..0.95] */
+static int nmaster     = 1;    /* number of clients in master area */
+static int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 
 #include "horizgrid.c"
@@ -113,7 +115,7 @@ static const Layout layouts[] = {
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray2, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
+static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbgcolor, "-sf", selfgcolor, NULL };
 static const char *termcmd[]  = { "st", NULL };
 static const char *layoutmenu_cmd = "layoutmenu.sh";
 
@@ -123,6 +125,28 @@ static const char *pulsemixercmd[] = {"v", "st", "-t", "pulsemixer", "-e", "puls
 static const char *nmtuicmd[] = {"n", "st", "-t", "nmtui", "-e", "nmtui",  NULL}; 
 static const char *calccmd[]  = {"c", "st", "-t", "eva", "-e", "eva", "--radian", NULL };
 static const char *dzrcmd[]  = {"r", "st", "-t", "dzr", "-e", "dzr", NULL };
+
+/*
+ * Xresources preferences to load at startup
+ */
+ResourcePref resources[] = {
+               { "font",               STRING,  &font },
+               { "dmenufont",          STRING,  &dmenufont },
+               { "normbgcolor",        STRING,  &normbgcolor },
+               { "normbordercolor",    STRING,  &normbordercolor },
+               { "normfgcolor",        STRING,  &normfgcolor },
+               { "selbgcolor",         STRING,  &selbgcolor },
+               { "selbordercolor",     STRING,  &selbordercolor },
+               { "selfgcolor",         STRING,  &selfgcolor },
+               { "borderpx",           INTEGER, &borderpx },
+               { "snap",                       INTEGER, &snap },
+               { "showbar",            INTEGER, &showbar },
+               { "topbar",             INTEGER, &topbar },
+               { "nmaster",            INTEGER, &nmaster },
+               { "resizehints",        INTEGER, &resizehints },
+               { "mfact",                      FLOAT,   &mfact },
+};
+
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
