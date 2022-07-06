@@ -7,7 +7,7 @@ static int min_width = 500;                    /* minimum width when centered */
 /* -fn option overrides fonts[0]; default X11 font or font set */
 static const char *fonts[] = {
 	"TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
-	"Symbols Nerd Font:style=1000-em:size=14:antialias=true:autohint=true",
+	"Symbols Nerd Font:size=14:antialias=true:autohint=true",
 };
 static const char *prompt      = "Search:";      /* -p  option; prompt to the left of input field */
 static const char *colors[SchemeLast][10] = {

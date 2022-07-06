@@ -32,7 +32,7 @@ static const int showtab            = showtab_auto;        /* Default tab barsho
 static const int toptab             = True;               /* False means bottom tab bar */
 static const char *fonts[]          = { 
         "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
-        "Symbols Nerd Font:style=1000-em:size=14:antialias=true:autohint=true",
+        "Symbols Nerd Font:size=14:antialias=true:autohint=true",
 };
 static const char dmenufont[]       = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
 static const char col_gray1[]       = "#282828";
@@ -81,7 +81,7 @@ static const Rule rules[] = {
         { NULL,       NULL,      "pulsemixer", 0,          1,             1,           -1,      'v' },
         { NULL,       NULL,      "nmtui",      0,          1,             1,           -1,      'n' },
         { NULL,       NULL,      "dzr",        0,          1,             1,           -1,      'r' },
-	{ NULL,       NULL,     "eva(luate)", 0,          1,             1,           -1,      'c' },
+	{ NULL,       NULL,      "eva",        0,          1,             1,           -1,      'c' },
 
 };
 
@@ -121,7 +121,7 @@ static const char *layoutmenu_cmd = "layoutmenu.sh";
 static const char *scratchpadcmd[] = {"s", "st", "-t", "scratchpad", NULL}; 
 static const char *pulsemixercmd[] = {"v", "st", "-t", "pulsemixer", "-e", "pulsemixer",  NULL}; 
 static const char *nmtuicmd[] = {"n", "st", "-t", "nmtui", "-e", "nmtui",  NULL}; 
-static const char *calccmd[]  = {"c", "st", "-t", "eva(luate)", "-e", "eva", NULL };
+static const char *calccmd[]  = {"c", "st", "-t", "eva", "-e", "eva", "--radian", NULL };
 static const char *dzrcmd[]  = {"r", "st", "-t", "dzr", "-e", "dzr", NULL };
 
 static Key keys[] = {
