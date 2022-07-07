@@ -333,7 +333,7 @@ recalculatenumbers()
 static void
 drawmenu(void)
 {
-	unsigned int curpos, oldcurlen;
+	unsigned int curpos, oldcurlen = 0;
 	struct item *item;
 	int x = 0, y = 0, fh = drw->fonts->h, w;
         int curlen, rcurlen;
@@ -347,16 +347,16 @@ drawmenu(void)
 	}
 	/* draw input field */
 	w = (lines > 0 || !matches) ? mw - x : inputw;
-//	drw_setscheme(drw, scheme[SchemeNorm]);
-//	drw_text(drw, x, 0, w, bh, lrpad / 2, text, 0);
+	drw_setscheme(drw, scheme[SchemeNorm]);
+	drw_text(drw, x, 0, w, bh, lrpad / 2, text, 0);
         w -= lrpad / 2;
         x += lrpad / 2;
 
-//	curpos = TEXTW(text) - TEXTW(&text[cursor]);
-//	if ((curpos += lrpad / 2 - 1) < w) {
-//		drw_setscheme(drw, scheme[SchemeNorm]);
-//		drw_rect(drw, x + curpos, 2 + (bh - fh) / 2, 2, fh - 4, 1, 0);
-//	}
+	curpos = TEXTW(text) - TEXTW(&text[cursor]);
+	if ((curpos += lrpad / 2 - 1) < w) {
+		drw_setscheme(drw, scheme[SchemeNorm]);
+		drw_rect(drw, x + curpos, 2 + (bh - fh) / 2, 2, fh - 4, 1, 0);
+	}
         rcurlen = drw_fontset_getwidth(drw, text + cursor);
         curlen = drw_fontset_getwidth(drw, text) - rcurlen;
         curpos += curlen - oldcurlen;
