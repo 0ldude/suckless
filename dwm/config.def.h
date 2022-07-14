@@ -120,7 +120,7 @@ static const char *termcmd[]  = { "st", NULL };
 static const char *layoutmenu_cmd = "layoutmenu.sh";
 
 /*First arg only serves to match against key in rules*/
-static const char *scratchpadcmd[] = {"s", "st", "-t", "scratchpad", NULL}; 
+static const char *scratchpadcmd[] = {"s", "st", "-t", "scratchpad", "-n", "scratchpad",, NULL}; 
 static const char *pulsemixercmd[] = {"v", "st", "-t", "pulsemixer", "-e", "pulsemixer",  NULL}; 
 static const char *nmtuicmd[] = {"n", "st", "-t", "nmtui", "-e", "nmtui",  NULL}; 
 static const char *calccmd[]  = {"c", "st", "-t", "eva", "-e", "eva", "--radian", NULL };
