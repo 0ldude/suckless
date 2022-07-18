@@ -1,2 +1,2 @@
 #!/bin/sh
-dmenu_path | dmenu -hp slock,pcmanfm,st,surf-tabbed,chromium-ug,virt-manager "$@" | ${SHELL:-"/bin/sh"} & 
+dmenu_path | dmenu -hp slock,pcmanfm,screenshot,surf-tabbed,zathura,zathura-tabbed,st,chromium-ug,virt-manager "$@" | ${SHELL:-"/bin/sh"} & 
