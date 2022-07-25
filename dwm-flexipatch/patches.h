@@ -396,7 +396,7 @@
  *
  * https://dwm.suckless.org/patches/statuscolors/
  */
-#define BAR_STATUSCOLORS_PATCH 1
+#define BAR_STATUSCOLORS_PATCH 0
 
 /* This patch adds configuration options for horizontal and vertical padding in the status bar.
  * https://dwm.suckless.org/patches/statuspadding/
@@ -654,7 +654,7 @@
  * area (master or stack) without affecting the other area.
  * https://dwm.suckless.org/patches/inplacerotate/
  */
-#define INPLACEROTATE_PATCH 0
+#define INPLACEROTATE_PATCH 1
 
 /* This patch lets you define custom insets from each edge of the screen. One use case would be
  * to arrange space for an external bar.
