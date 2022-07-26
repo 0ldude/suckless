@@ -1,13 +1,13 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const char font[]        = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
-static const char* normbgcolor  = "#282828";
-static const char* normfgcolor  = "#ebdbb2";
-static const char* selbgcolor   = "#1d2021";
-static const char* selfgcolor   = "#458588";
-static const char* urgbgcolor   = "#1d2021";
-static const char* urgfgcolor   = "#cc241d";
+static char font[]        = "monospace:size=9";
+static char* normbgcolor  = "#222222";
+static char* normfgcolor  = "#cccccc";
+static char* selbgcolor   = "#555555";
+static char* selfgcolor   = "#ffffff";
+static char* urgbgcolor   = "#111111";
+static char* urgfgcolor   = "#cc0000";
 static const char before[]      = "<";
 static const char after[]       = ">";
 static const char titletrim[]   = "...";
@@ -20,8 +20,8 @@ static       Bool urgentswitch  = False;
  * then the current position is changed + newposition. If npisrelative
  * is False, then newposition is an absolute position.
  */
-static int  newposition   = 1;
-static Bool npisrelative  = True;
+static int  newposition   = 0;
+static Bool npisrelative  = False;
 
 #define SETPROP(p) { \
         .v = (char *[]){ "/bin/sh", "-c", \
@@ -32,6 +32,19 @@ static Bool npisrelative  = True;
                 p, winid, NULL \
         } \
 }
+
+/*
+ * Xresources preferences to load at startup
+ */
+ResourcePref resources[] = {
+		{ "font",         STRING,  &font },
+		{ "color0",       STRING,  &normbgcolor },
+		{ "color4",       STRING,  &normfgcolor },
+		{ "color4",       STRING,  &selbgcolor },
+		{ "color7",       STRING,  &selfgcolor },
+		{ "color2",       STRING,  &urgbgcolor },
+		{ "color3",       STRING,  &urgfgcolor },
+};
 
 #define MODKEY ControlMask
 static Key keys[] = {
