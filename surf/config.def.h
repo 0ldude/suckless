@@ -196,8 +196,8 @@ static Key keys[] = {
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_d,      toggle,     { .i = DarkMode } },
 
 	/* https://surf.suckless.org/files/simple_bookmarking_redux/ */
-	{ MODKEY,               GDK_b,      spawn,      BM_PICK },
-	{ MODKEY|GDK_SHIFT_MASK,GDK_b,      spawn,      BM_ADD },
+	{ MODKEY,                GDK_KEY_b,      spawn,      BM_PICK },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_b,      spawn,      BM_ADD },
 };
 
 /* button definitions */
@@ -212,4 +212,4 @@ static Button buttons[] = {
 	{ OnMedia,      MODKEY,         1,      clickexternplayer, { 0 },       1 },
 };
 
-#define HOMEPAGE "https://duckduckgo.com/"
+#define HOMEPAGE "https://duckduckgo.com/lite&k1=-1&kp=-2&kn=1&kf=-1&kd=-1&kh=1&kg=p"

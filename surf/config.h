@@ -123,6 +123,10 @@ static SiteSpecific certs[] = {
 	{ "://suckless\\.org/", "suckless.org.crt" },
 };
 
+/* https://surf.suckless.org/files/simple_bookmarking_redux/ */
+#define BM_PICK { .v = (char *[]){ "/bin/sh", "-c", "xprop -id $0 -f _SURF_GO 8s -set _SURF_GO `cat ~/.surf/bookmarks | dmenu || exit 0`", winid, NULL } }
+#define BM_ADD { .v = (char *[]){ "/bin/sh", "-c", "(echo `xprop -id $0 _SURF_URI | cut -d '\"' -f 2` && cat ~/.surf/bookmarks) | sort -u > ~/.surf/bookmarks_new && mv ~/.surf/bookmarks_new ~/.surf/bookmarks", winid, NULL } }
+
 #define MODKEY GDK_CONTROL_MASK
 
 /* hotkeys */
@@ -148,8 +152,8 @@ static Key keys[] = {
 	/* vertical and horizontal scrolling, in viewport percentage */
 	{ MODKEY,                GDK_KEY_j,      scrollv,    { .i = +10 } },
 	{ MODKEY,                GDK_KEY_k,      scrollv,    { .i = -10 } },
-	{ MODKEY,                GDK_KEY_space,  scrollv,    { .i = +50 } },
-	{ MODKEY,                GDK_KEY_b,      scrollv,    { .i = -50 } },
+	//{ MODKEY,                GDK_KEY_space,  scrollv,    { .i = +50 } },
+	//{ MODKEY,                GDK_KEY_b,      scrollv,    { .i = -50 } },
 	{ MODKEY,                GDK_KEY_i,      scrollh,    { .i = +10 } },
 	{ MODKEY,                GDK_KEY_u,      scrollh,    { .i = -10 } },
 
@@ -179,10 +183,14 @@ static Key keys[] = {
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_g,      toggle,     { .i = Geolocation } },
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_s,      toggle,     { .i = JavaScript } },
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_i,      toggle,     { .i = LoadImages } },
-	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_b,      toggle,     { .i = ScrollBars } },
-	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_t,      toggle,     { .i = StrictTLS } },
+	//{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_b,      toggle,     { .i = ScrollBars } },
+	//{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_t,      toggle,     { .i = StrictTLS } },
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_m,      toggle,     { .i = Style } },
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_d,      toggle,     { .i = DarkMode } },
+
+	/* https://surf.suckless.org/files/simple_bookmarking_redux/ */
+	{ MODKEY,                GDK_KEY_b,      spawn,      BM_PICK },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_b,      spawn,      BM_ADD },
 };
 
 /* button definitions */
