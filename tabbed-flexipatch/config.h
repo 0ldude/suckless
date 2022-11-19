@@ -1,7 +1,7 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static       char font[]        = "monospace:size=9";
+static       char font[]        = "TerminessTTF Nerd Font Mono:style=Medium:size=14:antialias=true:autohint=true";
 static       char* normbgcolor  = "#222222";
 static       char* normfgcolor  = "#cccccc";
 static       char* selbgcolor   = "#555555";

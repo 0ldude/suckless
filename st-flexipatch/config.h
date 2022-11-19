@@ -9,8 +9,10 @@ static char *font = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:
 #if FONT2_PATCH
 /* Spare fonts */
 static char *font2[] = {
-	"TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
-	"Symbols Nerd Font:size=14:antialias=true:autohint=true",
+	"TerminessTTF Nerd Font Mono:style=Medium:size=14:antialias=true:autohint=true",
+	"Symbols Nerd Font Mono:style=1000-em:size=24:antialias=true:autohint=true",
+	"Noto Color Emoji:style=Regular:size=14:antialias=true:autohint=true",
+
 };
 #endif // FONT2_PATCH
 

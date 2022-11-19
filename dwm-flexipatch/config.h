@@ -135,8 +135,10 @@ static void (*bartabmonfns[])(Monitor *) = { NULL /* , customlayoutfn */ };
 #if BAR_PANGO_PATCH
 static const char font[]                 = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
 #else
-static const char *fonts[]               = { "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
-                                             "Symbols Nerd Font:size=14:antialias=true:autohint=true" };
+static const char *fonts[]               = {
+	"TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
+        "Symbols Nerd Font:stile=1000-em:size=14:antialias=true:autohint=true",
+};
 #endif // BAR_PANGO_PATCH
 static const char dmenufont[]            = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
 
