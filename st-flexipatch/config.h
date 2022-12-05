@@ -5,12 +5,13 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char *font = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
+static char *font = "TerminessTTF Nerd Font Mono:style=Medium:size=14:antialias=true:autohint=true";
 #if FONT2_PATCH
 /* Spare fonts */
 static char *font2[] = {
-	"TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
-	"Symbols Nerd Font:size=14:antialias=true:autohint=true",
+//	"TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
+//	"TerminessTTF Nerd Font Mono:style=Medium:size=14:antialias=true:autohint=true",
+	"Symbols Nerd Font Mono:style=1000-em:size=14:antialias=true:autohint=true",
 };
 #endif // FONT2_PATCH
 
