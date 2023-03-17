@@ -63,23 +63,45 @@ static const char unknown_str[] = "n/a";
  * wifi_perc           WiFi signal in percent          interface name (wlan0)
  * wifi_essid          WiFi ESSID                      interface name (wlan0)
  */
+
+//static const struct arg args[] = {
+//	/* function            format                argument */
+//	{ datetime,            "/\x02 %s",          "%F" },
+//	{ datetime,            "/\x02 %s",          "%T;" },
+//	{ uptime,              "/\x01祥 %s",          NULL },
+//	{ kernel_release,      "/\x02 %s",          NULL },
+//	{ netspeed_rx,         "/\x01 %s",          "wls3" },
+//	{ netspeed_tx,         "/\x02 %s",          "wls3" },
+//	{ wifi_perc,           "/\x01  %s%%",       "wls3" },
+//	{ cpu_perc,            "/\x02 %s%%",        NULL },
+//	{ ram_perc,            "/\x01 %s%%",        NULL },
+//	{ swap_perc,           "/\x02 %s%%",         NULL },
+//	{ disk_perc,           "/\x01 %s%%",        "/" },
+//	{ disk_perc,           "/\x02 %s%%",        "/home" },
+//	{ keyboard_indicators, "/\x01 %s",          "c?n?" },
+//	{ keymap,              "%s",                 NULL },
+//	{ run_command,         "/\x02蓼 %s",         "pactl list sinks |grep Volume |cut -d'/' -f4" },
+//	{ battery_state,       "/\x01(%s)",          "BAT0" },
+//	{ battery_perc,        " %s%% ",            "BAT0" },
+//};
+//
 static const struct arg args[] = {
 	/* function            format                argument */
-	{ datetime,            "/\x02 %s",          "%F" },
-	{ datetime,            "/\x02 %s",          "%T;" },
-	{ uptime,              "/\x01祥 %s",          NULL },
-	{ kernel_release,      "/\x02 %s",          NULL },
-	{ netspeed_rx,         "/\x01 %s",          "wls3" },
-	{ netspeed_tx,         "/\x02 %s",          "wls3" },
-	{ wifi_perc,           "/\x01  %s%%",       "wls3" },
-	{ cpu_perc,            "/\x02 %s%%",        NULL },
-	{ ram_perc,            "/\x01 %s%%",        NULL },
-	{ swap_perc,           "/\x02 %s%%",         NULL },
-	{ disk_perc,           "/\x01 %s%%",        "/" },
-	{ disk_perc,           "/\x02 %s%%",        "/home" },
-	{ keyboard_indicators, "/\x01 %s",          "c?n?" },
+	{ datetime,            "\x02 %s",          "%F" },
+	{ datetime,            "\x02 %s",          "%T;" },
+	{ uptime,              "\x01祥 %s",          NULL },
+	{ kernel_release,      "\x02 %s",          NULL },
+	{ netspeed_rx,         "\x01 %s",          "wls3" },
+	{ netspeed_tx,         "\x02 %s",          "wls3" },
+	{ wifi_perc,           "\x01  %s%%",       "wls3" },
+	{ cpu_perc,            "\x02 %s%%",        NULL },
+	{ ram_perc,            "\x01 %s%%",        NULL },
+	{ swap_perc,           "\x02 %s%%",         NULL },
+	{ disk_perc,           "\x01 %s%%",        "/" },
+	{ disk_perc,           "\x02 %s%%",        "/home" },
+	{ keyboard_indicators, "\x01 %s",          "c?n?" },
 	{ keymap,              "%s",                 NULL },
-	{ run_command,         "/\x02蓼 %s",         "pactl list sinks |grep Volume |cut -d'/' -f4" },
-	{ battery_state,       "/\x01(%s)",          "BAT0" },
+	{ run_command,         "\x02蓼 %s",         "pactl list sinks |grep Volume |cut -d'/' -f4" },
+	{ battery_state,       "\x01(%s)",          "BAT0" },
 	{ battery_perc,        " %s%% ",            "BAT0" },
 };
