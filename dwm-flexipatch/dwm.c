@@ -55,6 +55,10 @@
 #include <pango/pango.h>
 #endif // BAR_PANGO_PATCH
 
+#if RESTARTSIG_PATCH
+#include <poll.h>
+#endif // RESTARTSIG_PATCH
+
 #if XKB_PATCH
 #include <X11/XKBlib.h>
 #endif // XKB_PATCH
@@ -72,6 +76,7 @@
 #define Button8                 8
 #define Button9                 9
 #define NUMTAGS                 9
+#define NUMVIEWHIST             NUMTAGS
 #define BARRULES                20
 #if TAB_PATCH
 #define MAXTABS                 50
@@ -314,6 +319,7 @@ typedef struct {
 	int (*widthfunc)(Bar *bar, BarArg *a);
 	int (*drawfunc)(Bar *bar, BarArg *a);
 	int (*clickfunc)(Bar *bar, Arg *arg, BarArg *a);
+	int (*hoverfunc)(Bar *bar, BarArg *a, XMotionEvent *ev);
 	char *name; // for debugging
 	int x, w; // position, width for internal use
 } BarRule;
@@ -482,7 +488,11 @@ struct Monitor {
 	#endif // SETBORDERPX_PATCH
 	unsigned int seltags;
 	unsigned int sellt;
+	#if VIEW_HISTORY_PATCH
+	unsigned int tagset[NUMVIEWHIST];
+	#else
 	unsigned int tagset[2];
+	#endif // VIEW_HISTORY_PATCH
 	int showbar;
 	#if TAB_PATCH
 	int showtab;
@@ -515,6 +525,11 @@ struct Monitor {
 	Client *lastsel;
 	const Layout *lastlt;
 	#endif // IPC_PATCH
+	#if BAR_TAGPREVIEW_PATCH
+	Window tagwin;
+	int previewshow;
+	Pixmap tagmap[NUMTAGS];
+	#endif // BAR_TAGPREVIEW_PATCH
 };
 
 typedef struct {
@@ -667,7 +682,7 @@ static void motionnotify(XEvent *e);
 static void movemouse(const Arg *arg);
 static Client *nexttiled(Client *c);
 #if !ZOOMSWAP_PATCH || TAGINTOSTACK_ALLMASTER_PATCH || TAGINTOSTACK_ONEMASTER_PATCH
-static void pop(Client *);
+static void pop(Client *c);
 #endif // !ZOOMSWAP_PATCH / TAGINTOSTACK_ALLMASTER_PATCH / TAGINTOSTACK_ONEMASTER_PATCH
 static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
@@ -691,8 +706,10 @@ static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
-static void showhide(Client *c);
+#if COOL_AUTOSTART_PATCH
 static void sigchld(int unused);
+#endif // COOL_AUTOSTART_PATCH
+static void showhide(Client *c);
 static void spawn(const Arg *arg);
 #if RIODRAW_PATCH
 static pid_t spawncmd(const Arg *arg);
@@ -813,7 +830,11 @@ static Atom clientatom[ClientLast];
 #if ON_EMPTY_KEYS_PATCH
 static int isempty = 0;
 #endif // ON_EMPTY_KEYS_PATCH
+#if RESTARTSIG_PATCH
+static volatile sig_atomic_t running = 1;
+#else
 static int running = 1;
+#endif // RESTARTSIG_PATCH
 static Cur *cursor[CurLast];
 static Clr **scheme;
 static Display *dpy;
@@ -1088,11 +1109,6 @@ arrangemon(Monitor *m)
 	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
 	if (m->lt[m->sellt]->arrange)
 		m->lt[m->sellt]->arrange(m);
-	#if ROUNDED_CORNERS_PATCH
-	Client *c;
-	for (c = nexttiled(m->clients); c; c = nexttiled(c->next))
-		drawroundedcorners(c);
-	#endif // ROUNDED_CORNERS_PATCH
 }
 
 void
@@ -1227,15 +1243,29 @@ checkotherwm(void)
 void
 cleanup(void)
 {
-	#if !SEAMLESS_RESTART_PATCH
-	Arg a = {.ui = ~0};
-	#endif // SEAMLESS_RESTART_PATCH
-	Layout foo = { "", NULL };
 	Monitor *m;
+	Layout foo = { "", NULL };
 	size_t i;
-	#if !SEAMLESS_RESTART_PATCH
-	view(&a);
+
+	#if ALT_TAB_PATCH
+	alttabend();
+	#endif // ALT_TAB_PATCH
+
+	#if SEAMLESS_RESTART_PATCH
+	for (m = mons; m; m = m->next)
+		persistmonitorstate(m);
 	#endif // SEAMLESS_RESTART_PATCH
+
+	#if COOL_AUTOSTART_PATCH
+	/* kill child processes */
+	for (i = 0; i < autostart_len; i++) {
+		if (0 < autostart_pids[i]) {
+			kill(autostart_pids[i], SIGTERM);
+			waitpid(autostart_pids[i], NULL, 0);
+		}
+	}
+	#endif // COOL_AUTOSTART_PATCH
+
 	selmon->lt[selmon->sellt] = &foo;
 	for (m = mons; m; m = m->next)
 		while (m->stack)
@@ -1308,6 +1338,13 @@ cleanupmon(Monitor *mon)
 	#if PERTAG_PATCH
 	free(mon->pertag);
 	#endif // PERTAG_PATCH
+	#if BAR_TAGPREVIEW_PATCH
+	for (size_t i = 0; i < NUMTAGS; i++)
+		if (mon->tagmap[i])
+			XFreePixmap(dpy, mon->tagmap[i]);
+	XUnmapWindow(dpy, mon->tagwin);
+	XDestroyWindow(dpy, mon->tagwin);
+	#endif // BAR_TAGPREVIEW_PATCH
 	free(mon);
 }
 
@@ -1453,6 +1490,9 @@ configurenotify(XEvent *e)
 				#endif // !FAKEFULLSCREEN_PATCH
 				for (bar = m->bar; bar; bar = bar->next)
 					XMoveResizeWindow(dpy, bar->win, bar->bx, bar->by, bar->bw, bar->bh);
+				#if BAR_TAGPREVIEW_PATCH
+				createpreview(m);
+				#endif // BAR_TAGPREVIEW_PATCH
 			}
 			focus(NULL);
 			arrange(NULL);
@@ -1561,10 +1601,13 @@ createmon(void)
 	#endif // MONITOR_RULES_PATCH
 
 	m = ecalloc(1, sizeof(Monitor));
-	#if EMPTYVIEW_PATCH
-	m->tagset[0] = m->tagset[1] = 0;
+	#if !EMPTYVIEW_PATCH
+	#if VIEW_HISTORY_PATCH
+	for (i = 0; i < LENGTH(m->tagset); i++)
+		m->tagset[i] = 1;
 	#else
 	m->tagset[0] = m->tagset[1] = 1;
+	#endif // VIEW_HISTORY_PATCH
 	#endif // EMPTYVIEW_PATCH
 	m->mfact = mfact;
 	m->nmaster = nmaster;
@@ -1656,7 +1699,7 @@ createmon(void)
 	#if PERTAG_PATCH
 	if (!(m->pertag = (Pertag *)calloc(1, sizeof(Pertag))))
 		die("fatal: could not malloc() %u bytes\n", sizeof(Pertag));
-	m->pertag->curtag = m->pertag->prevtag = 1;
+	m->pertag->curtag = 1;
 	for (i = 0; i <= NUMTAGS; i++) {
 		#if FLEXTILE_DELUXE_LAYOUT
 		m->pertag->nstacks[i] = m->nstack;
@@ -2030,7 +2073,11 @@ focus(Client *c)
 		#endif // BAR_FLEXWINTITLE_PATCH
 		setfocus(c);
 	} else {
+		#if NODMENU_PATCH
+		XSetInputFocus(dpy, selmon->bar && selmon->bar->win ? selmon->bar->win : root, RevertToPointerRoot, CurrentTime);
+		#else
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
+		#endif // NODMENU_PATCH
 		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
 	}
 	selmon->sel = c;
@@ -2199,13 +2246,11 @@ gettextprop(Window w, Atom atom, char *text, unsigned int size)
 	text[0] = '\0';
 	if (!XGetTextProperty(dpy, w, &name, atom) || !name.nitems)
 		return 0;
-	if (name.encoding == XA_STRING)
+	if (name.encoding == XA_STRING) {
 		strncpy(text, (char *)name.value, size - 1);
-	else {
-		if (XmbTextPropertyToTextList(dpy, &name, &list, &n) >= Success && n > 0 && *list) {
-			strncpy(text, *list, size - 1);
-			XFreeStringList(list);
-		}
+	} else if (XmbTextPropertyToTextList(dpy, &name, &list, &n) >= Success && n > 0 && *list) {
+		strncpy(text, *list, size - 1);
+		XFreeStringList(list);
 	}
 	text[size - 1] = '\0';
 	XFree(name.value);
@@ -2246,24 +2291,38 @@ grabkeys(void)
 {
 	updatenumlockmask();
 	{
-		unsigned int i, j;
+		unsigned int i, j, k;
 		unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask|LockMask };
-		KeyCode code;
+		int start, end, skip;
+		KeySym *syms;
 
 		XUngrabKey(dpy, AnyKey, AnyModifier, root);
-		for (i = 0; i < LENGTH(keys); i++)
-			if ((code = XKeysymToKeycode(dpy, keys[i].keysym)))
-				for (j = 0; j < LENGTH(modifiers); j++)
-					XGrabKey(dpy, code, keys[i].mod | modifiers[j], root,
-						True, GrabModeAsync, GrabModeAsync);
+		XDisplayKeycodes(dpy, &start, &end);
+		syms = XGetKeyboardMapping(dpy, start, end - start + 1, &skip);
+		if (!syms)
+			return;
+		for (k = start; k <= end; k++)
+			for (i = 0; i < LENGTH(keys); i++)
+				/* skip modifier codes, we do that ourselves */
+				if (keys[i].keysym == syms[(k - start) * skip])
+					for (j = 0; j < LENGTH(modifiers); j++)
+						XGrabKey(dpy, k,
+							 keys[i].mod | modifiers[j],
+							 root, True,
+							 GrabModeAsync, GrabModeAsync);
 		#if ON_EMPTY_KEYS_PATCH
 		if (!selmon->sel)
-			for (i = 0; i < LENGTH(on_empty_keys); i++)
-				if ((code = XKeysymToKeycode(dpy, on_empty_keys[i].keysym)))
-					for (j = 0; j < LENGTH(modifiers); j++)
-						XGrabKey(dpy, code, on_empty_keys[i].mod | modifiers[j], root,
-								True, GrabModeAsync, GrabModeAsync);
+			for (k = start; k <= end; k++)
+				for (i = 0; i < LENGTH(on_empty_keys); i++)
+					/* skip modifier codes, we do that ourselves */
+					if (on_empty_keys[i].keysym == syms[(k - start) * skip])
+						for (j = 0; j < LENGTH(modifiers); j++)
+							XGrabKey(dpy, k,
+								 on_empty_keys[i].mod | modifiers[j],
+								 root, True,
+								 GrabModeAsync, GrabModeAsync);
 		#endif // ON_EMPTY_KEYS_PATCH
+		XFree(syms);
 	}
 }
 
@@ -2444,14 +2503,12 @@ manage(Window w, XWindowAttributes *wa)
 		#endif // SWALLOW_PATCH
 	}
 
-	if (c->x + WIDTH(c) > c->mon->mx + c->mon->mw)
-		c->x = c->mon->mx + c->mon->mw - WIDTH(c);
-	if (c->y + HEIGHT(c) > c->mon->my + c->mon->mh)
-		c->y = c->mon->my + c->mon->mh - HEIGHT(c);
-	c->x = MAX(c->x, c->mon->mx);
-	/* only fix client y-offset, if the client center might cover the bar */
-	c->y = MAX(c->y, ((!c->mon->bar || c->mon->bar->by == c->mon->my) && (c->x + (c->w / 2) >= c->mon->wx)
-		&& (c->x + (c->w / 2) < c->mon->wx + c->mon->ww)) ? bh : c->mon->my);
+	if (c->x + WIDTH(c) > c->mon->wx + c->mon->ww)
+		c->x = c->mon->wx + c->mon->ww - WIDTH(c);
+	if (c->y + HEIGHT(c) > c->mon->wy + c->mon->wh)
+		c->y = c->mon->wy + c->mon->wh - HEIGHT(c);
+	c->x = MAX(c->x, c->mon->wx);
+	c->y = MAX(c->y, c->mon->wy);
 
 	wc.border_width = c->bw;
 	XConfigureWindow(dpy, w, CWBorderWidth, &wc);
@@ -2463,8 +2520,6 @@ manage(Window w, XWindowAttributes *wa)
 	#endif // BAR_FLEXWINTITLE_PATCH
 	configure(c); /* propagates border_width, if size doesn't change */
 	updatesizehints(c);
-	if (getatomprop(c, netatom[NetWMState], XA_ATOM) == netatom[NetWMFullscreen])
-		setfullscreen(c, 1);
 	updatewmhints(c);
 	#if DECORATION_HINTS_PATCH
 	updatemotifhints(c);
@@ -2493,6 +2548,9 @@ manage(Window w, XWindowAttributes *wa)
 		c->sfh = c->h;
 	}
 	#endif // SAVEFLOATS_PATCH / EXRESIZE_PATCH
+
+	if (getatomprop(c, netatom[NetWMState], XA_ATOM) == netatom[NetWMFullscreen])
+		setfullscreen(c, 1);
 
 	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
 	grabbuttons(c, 0);
@@ -2602,9 +2660,7 @@ maprequest(XEvent *e)
 	}
 	#endif // BAR_SYSTRAY_PATCH
 
-	if (!XGetWindowAttributes(dpy, ev->window, &wa))
-		return;
-	if (wa.override_redirect)
+	if (!XGetWindowAttributes(dpy, ev->window, &wa) || wa.override_redirect)
 		return;
 	#if BAR_ANYBAR_PATCH
 	if (wmclasscontains(ev->window, altbarclass, ""))
@@ -2621,10 +2677,21 @@ motionnotify(XEvent *e)
 {
 	static Monitor *mon = NULL;
 	Monitor *m;
+	Bar *bar;
 	#if LOSEFULLSCREEN_PATCH
 	Client *sel;
 	#endif // LOSEFULLSCREEN_PATCH
 	XMotionEvent *ev = &e->xmotion;
+
+	if ((bar = wintobar(ev->window))) {
+		barhover(e, bar);
+		return;
+	}
+
+	#if BAR_TAGPREVIEW_PATCH
+	if (selmon->previewshow != 0)
+		hidetagpreview(selmon);
+	#endif // BAR_TAGPREVIEW_PATCH
 
 	if (ev->window != root)
 		return;
@@ -2705,9 +2772,6 @@ movemouse(const Arg *arg)
 			if (!selmon->lt[selmon->sellt]->arrange || c->isfloating) {
 				resize(c, nx, ny, c->w, c->h, 1);
 			}
-			#if ROUNDED_CORNERS_PATCH
-			drawroundedcorners(c);
-			#endif // ROUNDED_CORNERS_PATCH
 			break;
 		}
 	} while (ev.type != ButtonRelease);
@@ -2731,9 +2795,6 @@ movemouse(const Arg *arg)
 		c->sfy = ny;
 	}
 	#endif // SAVEFLOATS_PATCH / EXRESIZE_PATCH
-	#if ROUNDED_CORNERS_PATCH
-	drawroundedcorners(c);
-	#endif // ROUNDED_CORNERS_PATCH
 	ignoreconfigurerequests = 0;
 }
 
@@ -2832,19 +2893,11 @@ propertynotify(XEvent *e)
 void
 quit(const Arg *arg)
 {
-	#if COOL_AUTOSTART_PATCH
-	size_t i;
-	#endif // COOL_AUTOSTART_PATCH
 	#if RESTARTSIG_PATCH
 	restart = arg->i;
 	#endif // RESTARTSIG_PATCH
-	#if SEAMLESS_RESTART_PATCH
-	Monitor *m;
-	#endif // SEAMLESS_RESTART_PATCH
 	#if ONLYQUITONEMPTY_PATCH
-	#if !SEAMLESS_RESTART_PATCH
 	Monitor *m;
-	#endif // SEAMLESS_RESTART_PATCH
 	Client *c;
 	unsigned int n = 0;
 
@@ -2863,21 +2916,6 @@ quit(const Arg *arg)
 	#else // !ONLYQUITONEMPTY_PATCH
 	running = 0;
 	#endif // ONLYQUITONEMPTY_PATCH
-
-	#if SEAMLESS_RESTART_PATCH
-	for (m = mons; m && !running; m = m->next)
-		persistmonitorstate(m);
-	#endif // SEAMLESS_RESTART_PATCH
-
-	#if COOL_AUTOSTART_PATCH
-	/* kill child processes */
-	for (i = 0; i < autostart_len && !running; i++) {
-		if (0 < autostart_pids[i]) {
-			kill(autostart_pids[i], SIGTERM);
-			waitpid(autostart_pids[i], NULL, 0);
-		}
-	}
-	#endif // COOL_AUTOSTART_PATCH
 }
 
 Monitor *
@@ -2914,6 +2952,9 @@ resizeclient(Client *c, int x, int y, int w, int h)
 	c->expandmask = 0;
 	#endif // EXRESIZE_PATCH
 	wc.border_width = c->bw;
+	#if ROUNDED_CORNERS_PATCH
+	drawroundedcorners(c);
+	#endif // ROUNDED_CORNERS_PATCH
 	#if NOBORDER_PATCH
 	if (((nexttiled(c->mon->clients) == c && !nexttiled(c->next))
 		#if MONOCLE_LAYOUT
@@ -3046,9 +3087,6 @@ resizemouse(const Arg *arg)
 			}
 			if (!selmon->lt[selmon->sellt]->arrange || c->isfloating) {
 				resize(c, nx, ny, nw, nh, 1);
-				#if ROUNDED_CORNERS_PATCH
-				drawroundedcorners(c);
-				#endif // ROUNDED_CORNERS_PATCH
 			}
 			break;
 		}
@@ -3181,6 +3219,30 @@ run(void)
 		}
 	}
 }
+#elif RESTARTSIG_PATCH
+void
+run(void)
+{
+	XEvent ev;
+	XSync(dpy, False);
+	/* main event loop */
+	while (running) {
+		struct pollfd pfd = {
+			.fd = ConnectionNumber(dpy),
+			.events = POLLIN,
+		};
+		int pending = XPending(dpy) > 0 || poll(&pfd, 1, -1) > 0;
+
+		if (!running)
+			break;
+		if (!pending)
+			continue;
+
+		XNextEvent(dpy, &ev);
+		if (handler[ev.type])
+			handler[ev.type](&ev); /* call handler */
+	}
+}
 #else
 void
 run(void)
@@ -3203,7 +3265,7 @@ run(void)
 			handler[ev.type](&ev); /* call handler */
 	}
 }
-#endif // IPC_PATCH
+#endif // IPC_PATCH | RESTARTSIG_PATCH
 
 void
 scan(void)
@@ -3491,6 +3553,9 @@ setfullscreen(Client *c, int fullscreen)
 		arrange(c->mon);
 		#endif // !FAKEFULLSCREEN_PATCH
 	}
+	#if FAKEFULLSCREEN_PATCH
+	resizeclient(c, c->x, c->y, c->w, c->h);
+	#endif // FAKEFULLSCREEN_PATCH
 }
 #endif // FAKEFULLSCREEN_CLIENT_PATCH
 
@@ -3585,9 +3650,21 @@ setup(void)
 	XkbStateRec xkbstate;
 	#endif // XKB_PATCH
 	Atom utf8string;
-
+	#if COOL_AUTOSTART_PATCH
 	/* clean up any zombies immediately */
 	sigchld(0);
+	#else
+	struct sigaction sa;
+
+	/* do not transform children into zombies when they terminate */
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT | SA_RESTART;
+	sa.sa_handler = SIG_IGN;
+	sigaction(SIGCHLD, &sa, NULL);
+
+	/* clean up any zombies (inherited from .xinitrc etc) immediately */
+	while (waitpid(-1, NULL, WNOHANG) > 0);
+	#endif // COOL_AUTOSTART_PATCH
 
 	#if RESTARTSIG_PATCH
 	signal(SIGHUP, sighup);
@@ -3868,15 +3945,15 @@ showhide(Client *c)
 	}
 }
 
+#if COOL_AUTOSTART_PATCH
 void
 sigchld(int unused)
 {
-	#if COOL_AUTOSTART_PATCH
 	pid_t pid;
-	#endif // COOL_AUTOSTART_PATCH
+
 	if (signal(SIGCHLD, sigchld) == SIG_ERR)
 		die("can't install SIGCHLD handler:");
-	#if COOL_AUTOSTART_PATCH
+
 	while (0 < (pid = waitpid(-1, NULL, WNOHANG))) {
 		pid_t *p, *lim;
 
@@ -3891,10 +3968,8 @@ sigchld(int unused)
 			}
 		}
 	}
-	#else
-	while (0 < waitpid(-1, NULL, WNOHANG));
-	#endif // COOL_AUTOSTART_PATCH
 }
+#endif // COOL_AUTOSTART_PATCH
 
 #if RIODRAW_PATCH
 void
@@ -3976,9 +4051,7 @@ spawn(const Arg *arg)
 		#endif // SPAWNCMD_PATCH
 		setsid();
 		execvp(((char **)arg->v)[0], (char **)arg->v);
-		fprintf(stderr, "dwm: execvp %s", ((char **)arg->v)[0]);
-		perror(" failed");
-		exit(EXIT_SUCCESS);
+		die("dwm: execvp '%s' failed:", ((char **)arg->v)[0]);
 	}
 	#if RIODRAW_PATCH
 	return pid;
@@ -4198,6 +4271,9 @@ toggleview(const Arg *arg)
 	#if !EMPTYVIEW_PATCH
 	if (newtagset) {
 	#endif // EMPTYVIEW_PATCH
+		#if BAR_TAGPREVIEW_PATCH
+		tagpreviewswitchtag();
+		#endif // BAR_TAGPREVIEW_PATCH
 		selmon->tagset[selmon->seltags] = newtagset;
 
 		#if PERTAG_PATCH
@@ -4207,12 +4283,10 @@ toggleview(const Arg *arg)
 		if (newtagset == ~0)
 		#endif // SCRATCHPADS_PATCH
 		{
-			selmon->pertag->prevtag = selmon->pertag->curtag;
 			selmon->pertag->curtag = 0;
 		}
 		/* test if the user did not select the same tag */
 		if (!(newtagset & 1 << (selmon->pertag->curtag - 1))) {
-			selmon->pertag->prevtag = selmon->pertag->curtag;
 			for (i = 0; !(newtagset & 1 << i); i++) ;
 			selmon->pertag->curtag = i + 1;
 		}
@@ -4296,7 +4370,7 @@ unfocus(Client *c, int setfocus, Client *nextfocus)
 void
 unmanage(Client *c, int destroyed)
 {
-	Monitor *m = c->mon;
+	Monitor *m;
 	#if SWITCHTAG_PATCH
 	unsigned int switchtag = c->switchtag;
 	#endif // SWITCHTAG_PATCH
@@ -4304,6 +4378,24 @@ unmanage(Client *c, int destroyed)
 	#if XKB_PATCH
 	XkbInfo *xkb;
 	#endif // XKB_PATCH
+
+	#if ZOOMSWAP_PATCH
+	/* Make sure to clear any previous zoom references to the client being removed. */
+	#if PERTAG_PATCH
+	int i;
+	for (m = mons; m; m = m->next) {
+		for (i = 0; i <= NUMTAGS; i++) {
+			if (m->pertag->prevzooms[i] == c) {
+				m->pertag->prevzooms[i] = NULL;
+			}
+		}
+	}
+	#else
+	if (c == prevzoom)
+		prevzoom = NULL;
+	#endif // PERTAG_PATCH
+	#endif // ZOOMSWAP_PATCH
+	m = c->mon;
 
 	#if SWALLOW_PATCH
 	if (c->swallowing) {
@@ -4421,7 +4513,11 @@ updatebars(void)
 		#else
 		.background_pixmap = ParentRelative,
 		#endif // BAR_ALPHA_PATCH
+		#if BAR_TAGPREVIEW_PATCH
+		.event_mask = ButtonPressMask|ExposureMask|PointerMotionMask
+		#else
 		.event_mask = ButtonPressMask|ExposureMask
+		#endif // BAR_TAGPREVIEW_PATCH
 	};
 	XClassHint ch = {"dwm", "dwm"};
 	for (m = mons; m; m = m->next) {
@@ -4828,12 +4924,27 @@ view(const Arg *arg)
 		#endif // TOGGLETAG_PATCH
 		return;
 	}
-	selmon->seltags ^= 1; /* toggle sel tagset */
-	#if PERTAG_PATCH
-	pertagview(arg);
+	#if BAR_TAGPREVIEW_PATCH
+	tagpreviewswitchtag();
+	#endif // BAR_TAGPREVIEW_PATCH
+	#if VIEW_HISTORY_PATCH
+	if (!arg->ui) {
+		selmon->seltags += 1;
+		if (selmon->seltags == LENGTH(selmon->tagset))
+			selmon->seltags = 0;
+	} else {
+		if (selmon->seltags == 0)
+			selmon->seltags = LENGTH(selmon->tagset) - 1;
+		else
+			selmon->seltags -= 1;
+	}
 	#else
+	selmon->seltags ^= 1; /* toggle sel tagset */
+	#endif // VIEW_HISTORY_PATCH
 	if (arg->ui & TAGMASK)
 		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
+	#if PERTAG_PATCH
+	pertagview(arg);
 	#endif // PERTAG_PATCH
 	#if TAGSYNC_PATCH
 	}
@@ -4939,12 +5050,7 @@ zoom(const Arg *arg)
 	c->mon->pertag->prevclient[c->mon->pertag->curtag] = nexttiled(c->mon->clients);
 	#endif // SWAPFOCUS_PATCH
 
-	if (!c->mon->lt[c->mon->sellt]->arrange
-	|| (c && c->isfloating)
-	#if ZOOMSWAP_PATCH
-	|| !c
-	#endif // ZOOMSWAP_PATCH
-	)
+	if (!c->mon->lt[c->mon->sellt]->arrange || !c || c->isfloating)
 		return;
 
 	#if ZOOMSWAP_PATCH
@@ -4997,14 +5103,13 @@ zoom(const Arg *arg)
 	}
 	focus(c);
 	arrange(c->mon);
+	#elif SWAPFOCUS_PATCH && PERTAG_PATCH
+	if (c == nexttiled(c->mon->clients) && !(c = c->mon->pertag->prevclient[c->mon->pertag->curtag] = nexttiled(c->next)))
+		return;
+	pop(c);
 	#else
-	if (c == nexttiled(c->mon->clients))
-		#if SWAPFOCUS_PATCH && PERTAG_PATCH
-		if (!c || !(c = c->mon->pertag->prevclient[c->mon->pertag->curtag] = nexttiled(c->next)))
-		#else
-		if (!c || !(c = nexttiled(c->next)))
-		#endif // SWAPFOCUS_PATCH
-			return;
+	if (c == nexttiled(selmon->clients) && !(c = nexttiled(c->next)))
+		return;
 	pop(c);
 	#endif // ZOOMSWAP_PATCH
 }
