@@ -101,7 +101,7 @@ static const struct arg args[] = {
 	{ disk_perc,           "\x02  %s%% ",        "/home" },
 	{ keyboard_indicators, "\x01  %s",          "c?n?" },
 	{ keymap,              "%s ",                 NULL },
-	{ run_command,         "\x02 蓼 %s ",         "pactl list sinks |grep Volume |cut -d'/' -f4" },
+	{ run_command,         "\x02 蓼%s ",         "pactl list sinks |grep Volume |cut -d'/' -f4" },
 	{ battery_state,       "\x01 (%s)",          "BAT0" },
 	{ battery_perc,        " %s%% ",            "BAT0" },
 };

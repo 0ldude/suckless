@@ -20,7 +20,7 @@ static const unsigned int snap           = 32;  /* snap pixel */
 static const int swallowfloating         = 0;   /* 1 means swallow floating windows by default */
 #endif // SWALLOW_PATCH
 #if BAR_TAGPREVIEW_PATCH
-static const int scalepreview            = 4;        /* Tag preview scaling */
+static const int scalepreview            = 2;        /* Tag preview scaling */
 #endif // BAR_TAGPREVIEW_PATCH
 #if NO_MOD_BUTTONS_PATCH
 static int nomodbuttons                  = 1;   /* allow client mouse button bindings that have no modifier */
@@ -96,7 +96,7 @@ static const int horizpadbar             = 2;   /* horizontal padding for status
 static const int vertpadbar              = 0;   /* vertical padding for statusbar */
 #endif // BAR_STATUSPADDING_PATCH
 #if BAR_STATUSBUTTON_PATCH
-static const char buttonbar[]            = "";
+static const char buttonbar[]            = " ";
 #endif // BAR_STATUSBUTTON_PATCH
 #if BAR_SYSTRAY_PATCH
 static const unsigned int systrayspacing = 10;   /* systray spacing */
@@ -108,7 +108,7 @@ static const char etagf[] = "[%s]";             /* format of an empty tag */
 static const int lcaselbl = 0;                  /* 1 means make tag label lowercase */
 #endif // BAR_TAGLABELS_PATCH
 #if BAR_UNDERLINETAGS_PATCH
-static const unsigned int ulinepad = 5;         /* horizontal padding between the underline and tag */
+static const unsigned int ulinepad = 0;         /* horizontal padding between the underline and tag */
 static const unsigned int ulinestroke  = 2;     /* thickness / height of the underline */
 static const unsigned int ulinevoffset = 0;     /* how far above the bottom of the bar the line should appear */
 static const int ulineall = 0;                  /* 1 to show underline on all tags, 0 for just the active ones */
@@ -143,7 +143,7 @@ static const unsigned int maxhtab          = 200;  /* tab menu height */
 /* Indicators: see patch/bar_indicators.h for options */
 static int tagindicatortype              = INDICATOR_BOTTOM_BAR;
 static int tiledindicatortype            = INDICATOR_NONE;
-static int floatindicatortype            = INDICATOR_TOP_LEFT_SQUARE;
+static int floatindicatortype            = INDICATOR_NONE;
 #if FAKEFULLSCREEN_CLIENT_PATCH && !FAKEFULLSCREEN_PATCH
 static int fakefsindicatortype           = INDICATOR_PLUS;
 static int floatfakefsindicatortype      = INDICATOR_PLUS_AND_LARGER_SQUARE;
@@ -412,7 +412,7 @@ static const char *const autostart[] = {
 #endif // COOL_AUTOSTART_PATCH
 
 #if RENAMED_SCRATCHPADS_PATCH
-static const char *scratchpadcmd[] = {"`", "st", "-n", "spterm", NULL};
+static const char *scratchpadcmd[] = {"`", "st", "-n", "spterm", "-t", "spterm", NULL};
 static const char *pulsemixer[] = { "v", "st", "-n", "pulsemixer", "-t", "pulsemixer", "-e", "pulsemixer", NULL };
 static const char *nmtui[] = { "n", "st", "-n", "nmtui", "-t", "nmtui", "-e", "nmtui", NULL };
 static const char *dzr[] = { "r", "st", "-n", "dzr", "-t", "dzr", "-e", "dzr", NULL };
@@ -509,8 +509,8 @@ static const Rule rules[] = {
 	RULE(.class = "Gimp", .tags = 1 << 4)
 	RULE(.class = "Firefox", .tags = 1 << 7)
 	#if RENAMED_SCRATCHPADS_PATCH
-	RULE(.instance = "spterm", .scratchkey = '`', .isfloating = 1)
-	RULE(.instance = "pulsemixer", .scratchkey = 'v', .isfloating = 1,      .iscentered = 1)
+	RULE(.instance = "spterm", .scratchkey = '`', .isfloating = 1, .iscentered = 1)
+	RULE(.instance = "pulsemixer", .scratchkey = 'v', .isfloating = 1, .iscentered = 1)
 	RULE(.instance = "nmtui",.scratchkey ='n', .isfloating = 1, .iscentered = 1)
 	RULE(.instance = "dzr", .scratchkey = 'r', .isfloating = 1, .iscentered = 1)
 	RULE(.instance = "eva", .scratchkey = 'c', .isfloating = 1, .iscentered = 1)
