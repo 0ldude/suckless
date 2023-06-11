@@ -162,14 +162,14 @@ static void (*bartabmonfns[])(Monitor *) = { NULL /* , customlayoutfn */ };
 #endif // MONOCLE_LAYOUT
 #endif // BAR_TABGROUPS_PATCH
 #if BAR_PANGO_PATCH
-static const char font[]                 = "TerminessTTF Nerd Font Mono:style=Medium:size=14:antialias=true:autohint=true";
+static const char font[]                 = "Terminess Nerd Font Mono:style=Regular:size=14:antialias=true:autohint=true";
 #else
 static const char *fonts[]               = {
-	"TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true",
-	"Symbols Nerd Font:style=1000-em:size=14:antialias=true:autohint=true"
+	"Terminess Nerd Font:style=Regular:size=14:antialias=true:autohint=true",
+	"Symbols Nerd Font:style=Regular:size=14:antialias=true:autohint=true",
 };
 #endif // BAR_PANGO_PATCH
-static const char dmenufont[]            = "TerminessTTF Nerd Font Mono:style=Medium:size=14:antialias=true:autohint=true";
+static const char dmenufont[]            = "Terminess Nerd Font Mono:style=Regular:size=14:antialias=true:autohint=true";
 
 static char c000000[]                    = "#000000"; // placeholder value
 

@@ -27,7 +27,7 @@ static int restrict_return = 0;             /* -1 option; if 1, disables shift-r
 #endif // RESTRICT_RETURN_PATCH
 /* -fn option overrides fonts[0]; default X11 font or font set */
 #if PANGO_PATCH
-static char font[] = "TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true";
+static char font[] = "Terminess Nerd Font:style=Regular:size=14:antialias=true:autohint=true";
 #else
 #if XRESOURCES_PATCH
 static char *fonts[] =
@@ -35,7 +35,7 @@ static char *fonts[] =
 static const char *fonts[] =
 #endif // XRESOURCES_PATCH
 {
-	"TerminessTTF Nerd Font:style=Medium:size=14:antialias=true:autohint=true"
+	"Terminess Nerd Font:style=Regular:size=14:antialias=true:autohint=true"
 };
 #endif // PANGO_PATCH
 #if MANAGED_PATCH
